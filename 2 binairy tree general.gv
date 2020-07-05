@@ -1,13 +1,12 @@
-graph "strict" {
-	graph [rankdir=LR]
+graph "2 binairy tree general" {
 	node [height=.1 shape=record]
-	"α0" [label="<f0> |<f1> α0|<f2>"]
-	"ω0" [label="<f0> |<f1> ω0|<f2>"]
-	"α1" [label="<f0> |<f1> α1|<f2>"]
-	"ω1" [label="<f0> |<f1> ω1|<f2>"]
-	10 [label="<f0> |<f1> 10|<f2>"]
-	"α0" -- 10:f1
-	"α1" -- 10:f1
 	10:f0 -- "ω0"
+	"ω0" [label="<f0> |<f1> ω0|<f2>"]
 	10:f2 -- "ω1"
+	"ω1" [label="<f0> |<f1> ω1|<f2>"]
+	"α0" -- 10:f1
+	"α0" [label="<f0> |<f1> α0|<f2>"]
+	"α1" -- 10:f1
+	"α1" [label="<f0> |<f1> α1|<f2>"]
+	10 [label="<f0> |<f1> 10|<f2>"]
 }

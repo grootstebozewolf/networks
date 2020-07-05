@@ -2,7 +2,7 @@ from graphviz import Graph, nohtml
 from enum import Enum, auto, Flag
 from math import sqrt
 
-nodes = 8
+nodes = 4
 g = Graph(f"{nodes} binairy tree general", filename=f"{nodes} binairy tree general.gv",
             node_attr={"shape": "record", "height": ".1"})
 
@@ -44,30 +44,67 @@ class Node:
       g.node(self.NameBinary, nohtml(f"<f0> |<f1> {self.NameBinary}|<f2>"))
 
 class Router(Node):
-  def Wire(self, g, terminals, direction = Direction.ROOT, parent = None):
-    if len(terminals) == 0:
-      pass
-    if len(terminals) == 4:        
-      self.Populate(g)
-      if Direction.DOWNSTREAM in direction:
-        g.edge(terminals[0].NameBinary, f"{self.NameBinary}:f1")
-        g.edge(terminals[2].NameBinary, f"{self.NameBinary}:f1")
-      if Direction.UPSTREAM in direction:
-        g.edge(f"{self.NameBinary}:f0", terminals[1].NameBinary)
-        g.edge(f"{self.NameBinary}:f2", terminals[3].NameBinary)
-    else:
-      leftD = Router(NodeType.ROUTER, parent.n if not parent is None else 0,self.maxLevel, self.level-1)  
-      rightD = Router(NodeType.ROUTER,parent.n+3 if not parent is None else 3,self.maxLevel, self.level-1)
-      leftU = Router(NodeType.ROUTER, parent.n if not parent is None else 0,self.maxLevel, self.level+1)  
-      rightU = Router(NodeType.ROUTER,parent.n+3 if not parent is None else 3,self.maxLevel, self.level+1)
+  """
+  A 2x2 router (think factorio) which can pass items from α to ω
+  has connections to a NodeType 
+  """
+  
+  def __init__(self, nodeType, n, maxLevel, level = None):
+    self.upstreamLeft: None
+    self.upstreamRight: None
+    self.downstreamLeft: None
+    self.upstreamRight: None    
+    super(Router, self).__init__(nodeType, n, maxLevel, level)
+    
+  def Populate(self, g):        
+    if hasattr(self, "upstreamLeft") and not self.upstreamLeft is None:      
+      g.edge(f"{self.NameBinary}:f0", self.upstreamLeft.NameBinary )
+      self.upstreamLeft.Populate(g)
+    if hasattr(self, "upstreamRight") and not self.upstreamRight is None:
+      g.edge(f"{self.NameBinary}:f2", self.upstreamRight.NameBinary )
+      self.upstreamRight.Populate(g)
+    if hasattr(self, "downstreamLeft") and not self.downstreamLeft is None:    
+      g.edge(self.downstreamLeft.NameBinary, f"{self.NameBinary}:f1")
+      self.downstreamLeft.Populate(g)
+    if hasattr(self, "downstreamRight") and not self.downstreamRight is None:
+      g.edge(self.downstreamRight.NameBinary, f"{self.NameBinary}:f1")
+      self.downstreamRight.Populate(g)
+    super(Router,self).Populate(g)
+
         
-      leftD.Wire(g, terminals[:len(terminals)//2],Direction.DOWNSTREAM,parent)
-      rightD.Wire(g, terminals[len(terminals)//2:],Direction.DOWNSTREAM,parent)
-      
-      leftU.Wire(g, terminals[:len(terminals)//2],Direction.UPSTREAM,parent)
-      rightU.Wire(g, terminals[len(terminals)//2:],Direction.UPSTREAM,parent)
-      if parent is None:
-        self.Wire(g, [leftD,leftU, rightD, rightU])
+terminals = []
+maxLevel = round(sqrt(nodes))
+for x in range(0,nodes):
+  terminals += [ \
+    Node(NodeType.START, x, maxLevel), \
+    Node(NodeType.END, x, maxLevel) \
+  ]
+
+#for terminal in terminals:
+#  terminal.Populate(g)
+
+root = Router(NodeType.ROUTER, 0, maxLevel, maxLevel//2+1)
+
+def recursiveRoot(terminals, node):
+    """
+    Build tree of nodes with 2 inputs and 2 outputs
+    """
+    if(len(terminals)==4):
+        node.downstreamLeft = terminals[0] if not hasattr(node,"downstreamLeft") else node.downstreamLeft
+        node.downstreamRight = terminals[2] if not hasattr(node,"downstreamRight") else node.downstreamRight
+        node.upstreamLeft = terminals[1] if not hasattr(node,"upstreamRight")  else node.upstreamLeft
+        node.upstreamRight = terminals[3] if not hasattr(node,"upstreamRight")  else node.upstreamRight
+    else:
+        node.upstreamLeft = Router(NodeType.ROUTER, node.n + 2, maxLevel, node.level+1)
+        node.upstreamRight = Router(NodeType.ROUTER, node.n + 1, maxLevel, node.level+1)
+        node.downstreamLeft = Router(NodeType.ROUTER, node.n - 2, maxLevel, node.level-1)
+        node.downstreamRight = Router(NodeType.ROUTER, node.n - 1, maxLevel, node.level-1)
+        
+        recursiveRoot(terminals[:len(terminals)//2],node.upstreamLeft) 
+        recursiveRoot(terminals[:len(terminals)//2],node.downstreamLeft)        
+        recursiveRoot(terminals[len(terminals)//2:],node.upstreamLeft)        
+        recursiveRoot(terminals[len(terminals)//2:],node.upstreamRight)
+ 
 
 terminals = []
 maxLevel = round(sqrt(nodes))
@@ -77,9 +114,8 @@ for x in range(0,nodes):
     Node(NodeType.END, x, maxLevel) \
   ]
 
-for terminal in terminals:
-  terminal.Populate(g)
-
 root = Router(NodeType.ROUTER, 0, maxLevel, maxLevel//2+1)
-root.Wire(g,terminals)
+recursiveRoot(terminals, root)
+
+root.Populate(g)
 g.render(format="dot")
