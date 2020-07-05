@@ -1,0 +1,10 @@
+strict graph {
+  rankdir=LR;
+  {
+      s01,
+      s10 
+  } -- 00 -- {
+      e01,
+      e10
+  }
+}

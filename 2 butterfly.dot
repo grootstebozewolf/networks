@@ -1,0 +1,8 @@
+strict graph  {
+  graph [nodesep=1, ranksep=1];
+  rankdir=LR;
+  s1 -- 00 -- 10 -- e1
+  s2 -- 01 -- 11 -- e2
+  00 -- 11
+  01 -- 10
+}
