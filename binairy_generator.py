@@ -118,11 +118,11 @@ class Router(Node):
     super().__init__(NodeType.ROUTER, n, maxLevel, level)
     self._left = left
     self._right = right
-maxLevel = 4
+maxLevel = 8
 num_nodes = 2**maxLevel
 nodes = Router.generate(maxLevel)
 g = Graph(f"{num_nodes} binairy tree general", filename=f"{num_nodes} binairy tree general.gv",
-            node_attr={"shape": "record", "height": ".1"})
+            node_attr={"shape": "record", "height": ".1"},graph_attr={'rankdir':'LR'})
 
 for node in nodes:
   node.Populate(g)
