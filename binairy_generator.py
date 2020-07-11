@@ -63,20 +63,20 @@ class Node:
 
 class Start(Node):
   def __init__(self, n, maxLevel):
-    super().__init__(NodeType.START, n, maxLevel, 0)
+    super().__init__(NodeType.START, n, maxLevel, -1)
 
 class End(Node):
   def __init__(self,n, maxLevel):
-    super().__init__(NodeType.END, n, maxLevel, maxLevel)
+    super().__init__(NodeType.END, n, maxLevel, maxLevel+1)
 
 class Router(Node):
   @staticmethod
-  def generate(num_nodes):
+  def generate(maxLevel):
     terminals = []
     upstream_routers = []
     downstream_routers = []
     nodes = []
-    maxLevel = round(sqrt(num_nodes))+3
+    num_nodes = 2 ** maxLevel
     for x in range(0,num_nodes):
       terminals += [ \
         Start(x, maxLevel), \
@@ -84,15 +84,15 @@ class Router(Node):
       ]
     upstream_nodes = [x for x in terminals if type(x) is Start]
     downstream_nodes = [x for x in terminals if type(x) is End]
-    level_upstream = 1
-    level_downstream =  maxLevel-1
-    while(level_upstream != level_downstream):
+    level_upstream = 0
+    level_downstream =  maxLevel*2-2
+    while(len(upstream_nodes) != 0 and len(downstream_nodes) != 0):
       nodes += upstream_nodes + downstream_nodes
       n = 0
       for start_nodes_pair in zip(upstream_nodes[::2], upstream_nodes[1::2]):
         router = Router(n, maxLevel, level_upstream)
-        start_nodes_pair[0].left = router
-        start_nodes_pair[1].right = router
+        start_nodes_pair[0].right = router
+        start_nodes_pair[1].left = router
         upstream_routers += [router]
         n = n + 1
       m = 0
@@ -108,18 +108,19 @@ class Router(Node):
       downstream_routers = []
       level_upstream = level_upstream + 1
       level_downstream = level_downstream - 1
-    root = Router(0,maxLevel,level_upstream,downstream_nodes[0], downstream_nodes[1])
-    upstream_nodes[0].left = root
-    upstream_nodes[1].right = root
-    nodes += [root] + upstream_nodes + downstream_nodes
+    #root = Router(0,maxLevel,level_upstream,downstream_nodes[0], downstream_nodes[1])
+    #upstream_nodes[0].left = root
+    #upstream_nodes[1].right = root
+    #nodes += upstream_nodes + downstream_nodes
     return nodes
   
   def __init__(self, n, maxLevel, level, left=None, right=None):
     super().__init__(NodeType.ROUTER, n, maxLevel, level)
     self._left = left
     self._right = right
-num_nodes = 8
-nodes = Router.generate(num_nodes)
+maxLevel = 4
+num_nodes = 2**maxLevel
+nodes = Router.generate(maxLevel)
 g = Graph(f"{num_nodes} binairy tree general", filename=f"{num_nodes} binairy tree general.gv",
             node_attr={"shape": "record", "height": ".1"})
 
