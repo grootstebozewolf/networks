@@ -1,6 +1,7 @@
 from graphviz import Graph, nohtml
 from enum import Enum, auto, Flag
 from math import sqrt
+from sys import argv
 
 class NodeType(Enum):
   START = auto()
@@ -119,7 +120,7 @@ class Router(Node):
     super().__init__(NodeType.ROUTER, n, maxLevel, level)
     self._left = left
     self._right = right
-maxLevel = 11
+maxLevel = int(argv[1])
 num_nodes = 2**maxLevel
 nodes = Router.generate(maxLevel)
 g = Graph(f"{num_nodes} binairy tree general", filename=f"{num_nodes} binairy tree general.gv",
