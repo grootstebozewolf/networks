@@ -13,6 +13,7 @@ class Direction(Flag):
   ROOT = UPSTREAM | DOWNSTREAM
 
 class Node:
+  __slots__ = ['nodeType', 'n', 'maxLevel', 'level', '_left', '_right']
   def __init__(self, nodeType, n, maxLevel, level = None):
     self.nodeType = nodeType
     self.n = n
@@ -118,7 +119,7 @@ class Router(Node):
     super().__init__(NodeType.ROUTER, n, maxLevel, level)
     self._left = left
     self._right = right
-maxLevel = 8
+maxLevel = 11
 num_nodes = 2**maxLevel
 nodes = Router.generate(maxLevel)
 g = Graph(f"{num_nodes} binairy tree general", filename=f"{num_nodes} binairy tree general.gv",
