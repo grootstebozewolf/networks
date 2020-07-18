@@ -1,4 +1,5 @@
 graph "16 binairy tree general" {
+	graph [rankdir=LR]
 	node [height=.1 shape=record]
 	"α0000" [label="<f0> |<f1> α0|<f2>"]
 	"α0000":f1 -- 00000:f0
